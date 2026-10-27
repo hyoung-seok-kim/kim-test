@@ -1,0 +1,34 @@
+@import "tailwindcss";
+
+:root {
+  color-scheme: light dark;
+}
+
+body {
+  @apply bg-slate-50 text-slate-900 antialiased;
+}
+
+/* 차트 색: 검증된 기본 팔레트의 슬롯 1(파랑)·2(주황), 다크는 같은 색상의 다크 단계 */
+:root {
+  --series-1: #2a78d6;
+  --series-2: #eb6834;
+  --viz-grid: #e1e0d9;
+  --viz-axis: #c3c2b7;
+  --viz-muted: #898781;
+  --viz-ink: #52514e;
+  --tip-bg: #fcfcfb;
+}
+
+@media (prefers-color-scheme: dark) {
+  body {
+    @apply bg-slate-950 text-slate-100;
+  }
+  :root {
+    --series-1: #3987e5;
+    --series-2: #d95926;
+    --viz-grid: #2c2c2a;
+    --viz-axis: #383835;
+    --viz-ink: #c3c2b7;
+    --tip-bg: #1a1a19;
+  }
+}

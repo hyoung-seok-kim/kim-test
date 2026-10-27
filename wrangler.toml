@@ -1,0 +1,8 @@
+name = "blog-agent"
+compatibility_date = "2026-10-01"
+pages_build_output_dir = "./dist"
+
+# 비밀값은 여기에 쓰지 않는다.
+#   - 로컬: .dev.vars 파일 (git 제외)
+#   - 배포: Cloudflare Pages > Settings > Variables and Secrets
+# 필요한 값: GOOGLE_SERVICE_ACCOUNT_JSON, SPREADSHEET_ID
