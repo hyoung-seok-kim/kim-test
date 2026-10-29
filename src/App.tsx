@@ -1,62 +1,43 @@
-import { lazy, Suspense, useMemo, useState } from 'react'
-import { useQueryClient } from '@tanstack/react-query'
-import { fetchBloggers, useBloggers } from './api/client'
-import { applyFilters, categories, defaultFilters, summarize, type Filters } from './lib/aggregate'
-import type { Blogger } from './types'
-import SummaryCards from './components/SummaryCards'
-import FilterBar from './components/FilterBar'
-import BloggerTable from './components/BloggerTable'
+import { useState } from 'react'
+import Dashboard from './components/Dashboard'
+import RecommendPage from './components/RecommendPage'
 
-// recharts 가 번들의 대부분이라 표가 먼저 뜨도록 분리한다.
-const Charts = lazy(() => import('./components/Charts'))
-import DetailDrawer from './components/DetailDrawer'
+const TABS = [
+  ['recommend', '키워드 추천'],
+  ['dashboard', '수집 현황 (시트)'],
+] as const
+type Tab = (typeof TABS)[number][0]
+
+const initialTab = (): Tab => (location.hash === '#dashboard' ? 'dashboard' : 'recommend')
 
 export default function App() {
-  const { data, isPending, isError, error, isFetching } = useBloggers()
-  const qc = useQueryClient()
-  const [filters, setFilters] = useState<Filters>(defaultFilters)
-  const [selected, setSelected] = useState<Blogger | null>(null)
-
-  const all = data?.bloggers
-  const filtered = useMemo(() => (all ? applyFilters(all, filters) : []), [all, filters])
-  const summary = useMemo(() => summarize(all ?? []), [all])
-
-  const refresh = async () => qc.setQueryData(['bloggers'], await fetchBloggers(true))
+  const [tab, setTab] = useState<Tab>(initialTab)
+  const select = (t: Tab) => {
+    setTab(t)
+    history.replaceState(null, '', `#${t}`)
+  }
 
   return (
     <main className="mx-auto max-w-6xl space-y-5 px-4 py-8">
-      <header className="flex flex-wrap items-end justify-between gap-2">
-        <div>
-          <h1 className="text-2xl font-bold">올리브영 블로거 대시보드</h1>
-          {data && (
-            <p className="mt-1 text-xs text-slate-500">
-              키워드 '{data.settings.keyword}' · 최소 방문자 {data.settings.minVisitors ?? '-'}명 · 갱신 {new Date(data.fetchedAt).toLocaleString('ko-KR')}
-            </p>
-          )}
-        </div>
-        <button className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm disabled:opacity-50 dark:border-slate-700" disabled={isFetching} onClick={refresh}>
-          {isFetching ? '불러오는 중…' : '새로고침'}
-        </button>
+      <header className="space-y-3">
+        <h1 className="text-2xl font-bold">블로거 대시보드</h1>
+        <nav className="flex gap-1 border-b border-slate-200 dark:border-slate-800" role="tablist">
+          {TABS.map(([id, label]) => (
+            <button
+              key={id}
+              role="tab"
+              aria-selected={tab === id}
+              onClick={() => select(id)}
+              className={`-mb-px border-b-2 px-4 py-2 text-sm font-medium ${
+                tab === id ? 'border-blue-600 text-blue-600 dark:text-blue-400' : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+        </nav>
       </header>
-
-      {isPending && <p className="py-20 text-center text-slate-500">불러오는 중…</p>}
-      {isError && (
-        <div className="rounded-xl border border-red-300 bg-red-50 p-4 text-sm text-red-700 dark:border-red-900 dark:bg-red-950 dark:text-red-300">
-          데이터를 불러오지 못했습니다: {error.message}
-          <div className="mt-1 text-xs opacity-80">샘플 데이터로 화면을 보려면 주소 끝에 ?mock=1 을 붙이세요.</div>
-        </div>
-      )}
-      {data && (
-        <>
-          <SummaryCards s={summary} />
-          <FilterBar value={filters} onChange={setFilters} categories={categories(data.bloggers)} shown={filtered.length} total={data.bloggers.length} />
-          <Suspense fallback={<div className="h-72 rounded-xl border border-slate-200 dark:border-slate-800" />}>
-            <Charts data={filtered} />
-          </Suspense>
-          <BloggerTable data={filtered} onSelect={setSelected} />
-        </>
-      )}
-      <DetailDrawer blogger={selected} onClose={() => setSelected(null)} />
+      {tab === 'recommend' ? <RecommendPage /> : <Dashboard />}
     </main>
   )
 }

@@ -18,6 +18,25 @@ export type Blogger = {
   recommended: boolean
 }
 
+export type BlogCheck = {
+  id: string
+  name: string
+  todayVisitors: number | null
+  neighbors: number | null
+  totalVisitors: number | null
+  emails: string[]
+  collabMail: boolean
+  intro: string
+}
+
+export type CheckResult = BlogCheck | { id: string; error: string }
+
+export type Recommended = BlogCheck & {
+  url: string
+  keyword: string
+  foundAt: string
+}
+
 export type Settings = {
   minVisitors: number | null
   keyword: string
